@@ -1,6 +1,3 @@
-from textnode import TextNode, TextType
-
-
 class HTMLNode:
     def __init__(self, tag=None, value=None, children=None, props=None):
         self.tag = tag
@@ -40,25 +37,3 @@ class ParentNode(HTMLNode):
 
     def to_html(self):
         return f'{"<"+self.tag+self.props_to_html()+">" if self.tag else ""}{"".join([c.to_html() for c in self.children])}{"</"+self.tag+">" if self.tag else ""}'
-
-
-def text_node_to_html_node(text_node: TextNode) -> LeafNode:
-    match text_node.text_type:
-        case TextType.TEXT:
-            return LeafNode(value=text_node.text)
-        case TextType.BOLD:
-            return LeafNode(tag="b", value=text_node.text)
-        case TextType.ITALIC:
-            return LeafNode(tag="i", value=text_node.text)
-        case TextType.CODE:
-            return LeafNode(tag="code", value=text_node.text)
-        case TextType.LINK:
-            return LeafNode(
-                tag="a", value=text_node.text, props={"href": text_node.url}
-            )
-        case TextType.IMAGE:
-            return LeafNode(
-                tag="img", props={"src": text_node.url, "alt": text_node.text}
-            )
-        case _:
-            raise Exception("invalid node type")
