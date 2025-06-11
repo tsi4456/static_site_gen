@@ -1,15 +1,18 @@
 import shutil
+import sys
 import os
 import block_funcs as bf
 
 SOURCE_DIR = "static/"
-PUBLIC_DIR = "public/"
+BUILD_DIR = "docs/"
 CONTENT_DIR = "content/"
 
 
 def main():
-    dir_copy(SOURCE_DIR, PUBLIC_DIR)
-    generate_pages_recursive(CONTENT_DIR, "template.html", PUBLIC_DIR)
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+
+    dir_copy(SOURCE_DIR, BUILD_DIR)
+    generate_pages_recursive(CONTENT_DIR, "template.html", BUILD_DIR, basepath)
 
 
 def dir_copy(source, destination):
@@ -35,7 +38,7 @@ def extract_title(markdown: str):
     raise Exception("header not found")
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     with open(from_path, "r", encoding="utf-8") as f:
@@ -47,7 +50,12 @@ def generate_page(from_path, template_path, dest_path):
     content = bf.markdown_to_html_node(markdown).to_html()
     title = extract_title(markdown)
 
-    page = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    page = (
+        template.replace("{{ Title }}", title)
+        .replace("{{ Content }}", content)
+        .replace('href="/', f'href="{basepath}')
+        .replace('src="/', f'src="{basepath}')
+    )
 
     if not os.path.exists(dir := os.path.dirname(dest_path)):
         os.makedirs(dir)
@@ -55,7 +63,7 @@ def generate_page(from_path, template_path, dest_path):
         f.write(page)
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     if not os.path.exists(dir_path_content):
         raise Exception("invalid file path")
 
@@ -67,12 +75,14 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                     filepath,
                     template_path,
                     os.path.join(dest_dir_path, filename + ".html"),
+                    basepath,
                 )
         elif os.path.isdir(filepath):
             generate_pages_recursive(
                 filepath,
                 template_path,
                 os.path.join(dest_dir_path, file),
+                basepath,
             )
 
 
