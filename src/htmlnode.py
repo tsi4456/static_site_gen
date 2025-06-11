@@ -19,7 +19,7 @@ class HTMLNode:
 
 class LeafNode(HTMLNode):
     def __init__(self, tag, value, props=None):
-        if not value:
+        if value is None:
             raise ValueError("leaf nodes must have a value")
         super().__init__(tag=tag, value=value, children=None, props=props)
 

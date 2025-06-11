@@ -50,6 +50,7 @@ def markdown_to_html_node(markdown) -> ParentNode:
             case BlockType.HEADING:
                 head, text = block.split(" ", maxsplit=1)
                 new_nodes.append(ParentNode(f"h{len(head)}", text_to_children(text)))
+
             case BlockType.CODE:
                 new_nodes.append(
                     ParentNode(
@@ -57,30 +58,40 @@ def markdown_to_html_node(markdown) -> ParentNode:
                         [text_node_to_html_node(TextNode(block[4:-3], TextType.CODE))],
                     )
                 )
+
             case BlockType.QUOTE:
                 new_nodes.append(
                     ParentNode(
                         "blockquote",
-                        [text_to_children(line[2:]) for line in block.split("\n")],
+                        text_to_children(
+                            " ".join(
+                                [line.lstrip(">").strip() for line in block.split("\n")]
+                            )
+                        ),
                     )
                 )
+
             case BlockType.UL:
                 new_nodes.append(
                     ParentNode(
                         "ul",
                         [
-                            ParentNode("li", [text_to_children(line[2:])])
+                            ParentNode(
+                                "li",
+                                text_to_children(line[2:].strip()),
+                            )
                             for line in block.split("\n")
                         ],
                     )
                 )
+
             case BlockType.OL:
                 new_nodes.append(
                     ParentNode(
                         "ol",
                         [
                             ParentNode(
-                                "li", [text_to_children(line.split(" ", maxsplit=1)[1])]
+                                "li", text_to_children(line.split(" ", maxsplit=1)[1])
                             )
                             for line in block.split("\n")
                         ],
